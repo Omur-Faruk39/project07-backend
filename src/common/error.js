@@ -6,4 +6,4 @@ const Error = (error, message = "failed") => {
   };
 };
 
-module.exports = Error;
+module.exports = ErrorResponse = Error;
