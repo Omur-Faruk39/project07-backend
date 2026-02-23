@@ -1,35 +1,23 @@
 const express = require("express");
+const db = require("./src/config/db.js");
+const usersRouter = require("./src/routes/user.routes.js");
+const env = require("./src/config/env.js");
 
 const app = express();
+app.use(express.json({ limit: "10mb" }));
 
-const a = [
-  2, 2, 4, 1, 4, 1, 4, 13, 53, 5, 354, 5, 35, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5,
-  3, 5, 3, 5, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-];
-let count = undefined;
-let number = 0;
+app.use("/api/user", usersRouter);
 
-for (let i = 0; i < a.length; i++) {
-  if (a[i] === count) {
-    number++;
-  } else {
-    if (number === 0) {
-      count = a[i];
-    } else {
-      number--;
-    }
-  }
-}
-
-console.log(count);
-console.log(number);
-
-app.get("/api/hello", (req, res) => {
-  res.json({ message: "Hello, World!" });
+app.use((req, res) => {
+  res.status(404).json({ status: "not ok", message: "Route not found" });
 });
 
-const PORT = process.env.PORT || 5000;
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
+});
 
+const PORT = env.APP_PORT;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
