@@ -25,6 +25,12 @@ const register = async (data) => {
   }
 };
 
+const userExists = async (data, key) => {
+  const [result] = await db.query(`SELECT * FROM user WHERE ${key} = ?`, data);
+  return Boolean(result[0]);
+};
+
 module.exports = {
   register,
+  userExists,
 };

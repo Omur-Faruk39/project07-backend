@@ -7,5 +7,6 @@ routes.post("/login", (req, res) => {
 });
 
 routes.post("/register", registrationCtr.register);
+routes.post("/check-username", registrationCtr.userNameUniq);
 
 module.exports = routes;
