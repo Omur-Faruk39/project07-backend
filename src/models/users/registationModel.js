@@ -14,10 +14,26 @@ const register = async (data) => {
     refer_code,
     bio,
     banner,
-  } = req.body;
+  } = data;
 
   try {
-    const result = await db.query("SELECT * FROM user");
+    const result = await db.query(
+      "INSERT INTO user (email, full_name, uid, game_id_name, user_name, role, pic, phone, password, refer_code, bio, banner) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        email,
+        full_name,
+        uid,
+        game_id_name,
+        user_name,
+        role,
+        pic,
+        phone,
+        password,
+        refer_code,
+        bio,
+        banner,
+      ],
+    );
 
     return result;
   } catch (error) {
