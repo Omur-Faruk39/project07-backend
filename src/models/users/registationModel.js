@@ -75,9 +75,34 @@ const register = async (data) => {
   }
 };
 
-const registerPassword = async (phone, password, email) => {
-  const data = await db.query(``);
- 
+const registerPassword = async (data) => {
+  const { email = null, phone, fesid = null, password } = data;
+
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM password_user WHERE phone = ?",
+      [phone],
+    );
+
+    if (rows.length > 0) {
+      const result = await db.query(
+        `UPDATE password_user 
+         SET email = ?, password = ?, fesid = ?, updated_time = CURRENT_TIMESTAMP
+         WHERE phone = ?`,
+        [email, password, fesid, phone],
+      );
+      return { action: "updated", result };
+    } else {
+      const result = await db.query(
+        `INSERT INTO password_user (email, phone, fesid, password) VALUES (?, ?, ?, ?)`,
+        [email, phone, fesid, password],
+      );
+      return { action: "inserted", result };
+    }
+  } catch (error) {
+    console.error("Error registering password:", error);
+    throw error;
+  }
 };
 
 const userExists = async (data, key) => {
@@ -89,8 +114,19 @@ const userExists = async (data, key) => {
   return Boolean(user && user.isvarified > 0);
 };
 
+const saveOTP = async (phone, otp) => {
+  try {
+    const data = await db.query(`SELECT * FROM otp_verification`);
+    console.log(data);
+  } catch (error) {
+    console.error("Error saving OTP:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   register,
   userExists,
   registerPassword,
+  saveOTP,
 };

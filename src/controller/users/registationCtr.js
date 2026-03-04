@@ -5,6 +5,7 @@ const success = require("../../common/success.js");
 const ErrorResponse = require("../../common/error.js");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
+const { otpSender } = require("../../lib/optSender.js");
 
 const registationCtr = {};
 
@@ -64,7 +65,19 @@ registationCtr.register = async (req, res) => {
   try {
     const result = await registrationModel.register({ ...value, fesid });
 
-    await registrationModel.registerPassword(value.phone, hash, value.email);
+    const passwordResult = await registrationModel.registerPassword({
+      phone: value.phone,
+      password: hash,
+      email: value.email,
+      fesid,
+    });
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    // console.log(`Generated OTP for ${value.phone}: ${otp}`);
+
+    //await otpSender(value.phone, "123456");
+
+    registrationModel.saveOTP();
   } catch (err) {
     console.error("Registration error:", err);
     res.status(500).json(ErrorResponse("Server error", err.message));
