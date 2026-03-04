@@ -21,6 +21,7 @@ routes.post("/check-phone", async (req, res) => {
 });
 
 routes.post("/register", registrationCtr.register);
+routes.post("/varify-otp", registrationCtr.verifyOTP);
 // routes.post("/check-username", registrationCtr);
 
 module.exports = routes;

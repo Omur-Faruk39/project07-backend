@@ -5,19 +5,23 @@ const { OTP_SECRET_KEY, OTP_URL_ENDPOINT } = require("../config/env");
 const otpSender = async (phone, otp) => {
   try {
     const formData = new FormData();
-    formData.append("smg", `Your Free Esports OTP is ${otp}`);
-    formData.append("password", OTP_SECRET_KEY);
+    formData.append("msg", `Your Free Esports OTP is ${otp}`);
+    formData.append("api_key", OTP_SECRET_KEY);
     formData.append("to", phone);
 
-    axios
+    await axios
       .post(OTP_URL_ENDPOINT, formData, {
         headers: formData.getHeaders(),
       })
       .then((response) => {
-        console.log(response.data);
+        if (response.data.error) {
+          console.error("Error sending OTP:", response.data);
+          throw new Error("Failed to send OTP");
+        }
       })
       .catch((error) => {
         console.error(error);
+        throw new Error("Failed to send OTP");
       });
   } catch (error) {
     console.error("Error sending OTP:", error);

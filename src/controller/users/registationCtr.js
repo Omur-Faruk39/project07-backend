@@ -6,10 +6,12 @@ const ErrorResponse = require("../../common/error.js");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
 const { otpSender } = require("../../lib/optSender.js");
+const { deepTrim } = require("../../lib/trim.js");
 
 const registationCtr = {};
 
 registationCtr.register = async (req, res) => {
+  req.body = deepTrim(req.body);
   //validate and sanitize input
   let sanitizedData;
   try {
@@ -22,6 +24,14 @@ registationCtr.register = async (req, res) => {
     return res
       .status(400)
       .json(ErrorResponse(error.details[0].message, "Validation failed"));
+  }
+
+  if (value.phone.startsWith("+880")) {
+    value.phone = value.phone.slice(4);
+  } else if (value.phone.startsWith("880")) {
+    value.phone = value.phone.slice(3);
+  } else if (value.phone.startsWith("0")) {
+    value.phone = value.phone.slice(1);
   }
 
   // Check for duplicates
@@ -63,9 +73,9 @@ registationCtr.register = async (req, res) => {
   // console.log("User data to be registered:", hash);
 
   try {
-    const result = await registrationModel.register({ ...value, fesid });
+    await registrationModel.register({ ...value, fesid });
 
-    const passwordResult = await registrationModel.registerPassword({
+    await registrationModel.registerPassword({
       phone: value.phone,
       password: hash,
       email: value.email,
@@ -73,15 +83,24 @@ registationCtr.register = async (req, res) => {
     });
 
     const otp = Math.floor(100000 + Math.random() * 900000);
-    // console.log(`Generated OTP for ${value.phone}: ${otp}`);
-
-    //await otpSender(value.phone, "123456");
-
-    registrationModel.saveOTP();
+    await registrationModel.saveOTP(value.phone, otp, req.ip);
+    await otpSender(
+      `880${value.phone}`,
+      `Your OTP for registration is: ${otp}`,
+    );
+    res
+      .status(201)
+      .json(
+        success("User registered successfully", "User registered successfully"),
+      );
   } catch (err) {
     console.error("Registration error:", err);
     res.status(500).json(ErrorResponse("Server error", err.message));
   }
+};
+
+registationCtr.verifyOTP = async (req, res) => {
+  req.body = deepTrim(req.body);
 };
 
 module.exports = registationCtr;

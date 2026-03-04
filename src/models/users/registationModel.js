@@ -114,12 +114,54 @@ const userExists = async (data, key) => {
   return Boolean(user && user.isvarified > 0);
 };
 
-const saveOTP = async (phone, otp) => {
+const saveOTP = async (phone, otp, ip) => {
+  console.log(phone);
   try {
-    const data = await db.query(`SELECT * FROM otp_verification`);
-    console.log(data);
+    const [recentOtp] = await db.query(
+      `SELECT created_at 
+       FROM otp_verification 
+       WHERE phone = ? 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+      [phone],
+    );
+    if (recentOtp.length > 0) {
+      const lastTime = new Date(recentOtp[0].created_at).getTime();
+      const now = Date.now();
+
+      if (now - lastTime < 60 * 1000) {
+        throw new Error(
+          "Please wait at least 1 minute before requesting another OTP.",
+        );
+      }
+    }
+
+    // 2️⃣ Check daily limit (3 per IP per day)
+    const [ipCount] = await db.query(
+      `SELECT COUNT(*) as total 
+       FROM otp_verification 
+       WHERE ip_address = ?
+       AND DATE(created_at) = CURDATE()`,
+      [ip],
+    );
+    if (ipCount[0].total >= 3) {
+      throw new Error("Daily OTP limit exceeded for this IP address.");
+    }
+
+    // 3️⃣ Set expiry (5 minutes)
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    // 4️⃣ Insert OTP
+    await db.query(
+      `INSERT INTO otp_verification 
+       (ip_address, phone, fesid, otp_code, expires_at, created_at)
+       VALUES (?, ?, ?, ?, ?, NOW())`,
+      [ip, phone, "OTP_LOGIN", otp, expiresAt],
+    );
+
+    return { success: true };
   } catch (error) {
-    console.error("Error saving OTP:", error);
+    // console.error("Error saving OTP:", error.message);
     throw error;
   }
 };
