@@ -1,5 +1,8 @@
 const registrationModel = require("../../models/users/registationModel.js");
-const { userSchema } = require("../../validation/ragistation.js");
+const {
+  userSchema,
+  otpVerificationSchema,
+} = require("../../validation/ragistation.js");
 const sanitize = require("../../utils/sanitize.js");
 const success = require("../../common/success.js");
 const ErrorResponse = require("../../common/error.js");
@@ -7,6 +10,7 @@ const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
 const { otpSender } = require("../../lib/optSender.js");
 const { deepTrim } = require("../../lib/trim.js");
+const reqbody = require("../../lib/reqbody.js");
 
 const registationCtr = {};
 
@@ -100,7 +104,34 @@ registationCtr.register = async (req, res) => {
 };
 
 registationCtr.verifyOTP = async (req, res) => {
-  req.body = deepTrim(req.body);
+  //validate and sanitize input
+  const data = reqbody(req.body, otpVerificationSchema);
+  if (data instanceof Error) {
+    return res
+      .status(400)
+      .json(ErrorResponse(data.message, "Validation failed"));
+  }
+
+  try {
+    const isvarified = await registrationModel.verifyOTP(
+      req.body.phone,
+      req.body.otp,
+    );
+    if (isvarified) {
+      res
+        .status(200)
+        .json(success("OTP verified successfully", "OTP verified"));
+    } else {
+      res
+        .status(400)
+        .json(
+          ErrorResponse("Invalid or expired OTP", "OTP verification failed"),
+        );
+    }
+  } catch (err) {
+    console.error("OTP verification error:", err);
+    res.status(500).json(ErrorResponse("Server error", err.message));
+  }
 };
 
 module.exports = registationCtr;

@@ -43,6 +43,12 @@ const userSchema = Joi.object({
   banner: Joi.string().optional(),
 });
 
+const otpVerificationSchema = Joi.object({
+  phone: phoneSchema,
+  otp: Joi.string().length(6).pattern(/^\d+$/).required(),
+});
+
 module.exports = {
   userSchema,
+  otpVerificationSchema,
 };

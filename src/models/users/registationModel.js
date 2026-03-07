@@ -129,9 +129,9 @@ const saveOTP = async (phone, otp, ip) => {
       const lastTime = new Date(recentOtp[0].created_at).getTime();
       const now = Date.now();
 
-      if (now - lastTime < 60 * 1000) {
+      if (now - lastTime < 180 * 1000) {
         throw new Error(
-          "Please wait at least 1 minute before requesting another OTP.",
+          "Please wait at least 3 minutes before requesting another OTP.",
         );
       }
     }
@@ -148,8 +148,8 @@ const saveOTP = async (phone, otp, ip) => {
       throw new Error("Daily OTP limit exceeded for this IP address.");
     }
 
-    // 3️⃣ Set expiry (5 minutes)
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    // 3️⃣ Set expiry (3 minutes)
+    const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
 
     // 4️⃣ Insert OTP
     await db.query(
@@ -166,9 +166,21 @@ const saveOTP = async (phone, otp, ip) => {
   }
 };
 
+const verifyOTP = async (phone, otp) => {
+  const [rows] = await db.query(
+    `SELECT * FROM otp_verification 
+     WHERE phone = ? AND otp_code = ? AND expires_at > NOW() 
+     ORDER BY created_at DESC 
+     LIMIT 1`,
+    [phone, otp],
+  );
+  return rows.length > 0;
+};
+
 module.exports = {
   register,
   userExists,
   registerPassword,
   saveOTP,
+  verifyOTP,
 };
