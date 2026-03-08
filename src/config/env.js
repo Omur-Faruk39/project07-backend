@@ -9,4 +9,5 @@ module.exports = {
   DB_NAME: process.env.DB_NAME || "simple_hotel_management",
   OTP_SECRET_KEY: process.env.OTP_SECRET_KEY,
   OTP_URL_ENDPOINT: process.env.OTP_URL_ENDPOINT,
+  JWT_SECRET: process.env.JWT_SECRET,
 };

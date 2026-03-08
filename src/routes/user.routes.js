@@ -2,11 +2,14 @@ const routes = require("express").Router();
 const success = require("../common/success.js");
 const registrationCtr = require("../controller/users/registationCtr.js");
 const registrationModel = require("../models/users/registationModel.js");
+const { login } = require("../controller/users/userLogCtr.js");
 
-routes.post("/login", (req, res) => {
-  res.status(200).json(success("Login successful"));
-});
+// open routes
+routes.post("/login", login);
+routes.post("/register", registrationCtr.register);
+routes.post("/varify-otp", registrationCtr.verifyOTP);
 
+// developer routes (for testing, remove in production)
 routes.post("/check-phone", async (req, res) => {
   const { phone } = req.body;
 
@@ -19,9 +22,5 @@ routes.post("/check-phone", async (req, res) => {
   const exists = await registrationModel.userExists(phone, "phone");
   res.json({ success: true, exists });
 });
-
-routes.post("/register", registrationCtr.register);
-routes.post("/varify-otp", registrationCtr.verifyOTP);
-// routes.post("/check-username", registrationCtr);
 
 module.exports = routes;

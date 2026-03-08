@@ -9,10 +9,10 @@ const phoneSchema = Joi.string()
   });
 
 const loginSchema = Joi.object({
-  username: Joi.string().min(3).max(30),
-  phoneNumber: phoneSchema,
+  email: Joi.string().email(),
+  phone: phoneSchema,
   password: Joi.string().min(6).max(255).required(),
-}).xor("username", "phoneNumber");
+}).xor("email", "phone");
 
 module.exports = {
   loginSchema,

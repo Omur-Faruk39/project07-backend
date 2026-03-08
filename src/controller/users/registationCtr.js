@@ -11,6 +11,8 @@ const bcrypt = require("bcryptjs");
 const { otpSender } = require("../../lib/optSender.js");
 const { deepTrim } = require("../../lib/trim.js");
 const reqbody = require("../../lib/reqbody.js");
+const { login } = require("../../models/users/userLogModel.js");
+const { generateAccessToken } = require("../../utils/jwt.js");
 
 const registationCtr = {};
 
@@ -30,6 +32,7 @@ registationCtr.register = async (req, res) => {
       .json(ErrorResponse(error.details[0].message, "Validation failed"));
   }
 
+  // Normalize phone number
   if (value.phone.startsWith("+880")) {
     value.phone = value.phone.slice(4);
   } else if (value.phone.startsWith("880")) {
@@ -73,9 +76,6 @@ registationCtr.register = async (req, res) => {
     fesid = uuidv4();
   }
 
-  // console.log("Generated UUID:", id);
-  // console.log("User data to be registered:", hash);
-
   try {
     await registrationModel.register({ ...value, fesid });
 
@@ -112,15 +112,38 @@ registationCtr.verifyOTP = async (req, res) => {
       .json(ErrorResponse(data.message, "Validation failed"));
   }
 
+  // Normalize phone number
+  if (data.phone.startsWith("+880")) {
+    data.phone = data.phone.slice(4);
+  } else if (data.phone.startsWith("880")) {
+    data.phone = data.phone.slice(3);
+  } else if (data.phone.startsWith("0")) {
+    data.phone = data.phone.slice(1);
+  }
+
   try {
-    const isvarified = await registrationModel.verifyOTP(
-      req.body.phone,
-      req.body.otp,
-    );
+    // otp verify
+    const isvarified = await registrationModel.verifyOTP(data.phone, data.otp);
+
     if (isvarified) {
-      res
-        .status(200)
-        .json(success("OTP verified successfully", "OTP verified"));
+      //get user details and generate token
+      const user = await login("", data.phone);
+      const jwtToken = generateAccessToken({
+        phone: user.phone,
+        username: user.username,
+        role: user.role,
+      });
+
+      //varify user and send response
+      const varifyResult = await registrationModel.varifyUser(data.phone);
+      if (varifyResult instanceof Error) {
+        return res
+          .status(500)
+          .json(
+            ErrorResponse("User verification failed", varifyResult.message),
+          );
+      }
+      res.status(200).json(success({ token: jwtToken }, "OTP verified"));
     } else {
       res
         .status(400)

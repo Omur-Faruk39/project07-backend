@@ -115,7 +115,6 @@ const userExists = async (data, key) => {
 };
 
 const saveOTP = async (phone, otp, ip) => {
-  console.log(phone);
   try {
     const [recentOtp] = await db.query(
       `SELECT created_at 
@@ -177,10 +176,45 @@ const verifyOTP = async (phone, otp) => {
   return rows.length > 0;
 };
 
+const varifyUser = async (phone) => {
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const result = await connection.query(
+      `UPDATE user 
+       SET isverified = 1, updated_time = CURRENT_TIMESTAMP
+       WHERE phone = ?`,
+      [phone],
+    );
+
+    const varifyPasswordResult = await connection.query(
+      `UPDATE password_user 
+       SET isverified = 1, updated_time = CURRENT_TIMESTAMP
+       WHERE phone = ?`,
+      [phone],
+    );
+
+    if (result.affectedRows > 0 && varifyPasswordResult.affectedRows > 0) {
+      await connection.commit();
+      return true;
+    } else {
+      await connection.rollback();
+      throw new Error("User verification failed");
+    }
+  } catch (error) {
+    await connection.rollback();
+    return { success: false, message: error.message };
+  } finally {
+    connection.release();
+  }
+};
+
 module.exports = {
   register,
   userExists,
   registerPassword,
   saveOTP,
   verifyOTP,
+  varifyUser,
 };
