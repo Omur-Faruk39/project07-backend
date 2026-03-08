@@ -1,6 +1,6 @@
 const Error = (error, message = "failed") => {
   return {
-    status: "not ok",
+    status: false,
     message,
     error,
   };

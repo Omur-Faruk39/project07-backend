@@ -19,12 +19,12 @@ app.use(limiter);
 app.use("/api/user", usersRouter);
 
 app.use((req, res) => {
-  res.status(404).json({ status: "not ok", message: "Route not found" });
+  res.status(404).json({ status: false, message: "Route not found" });
 });
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
+  res.status(500).json({ status: false, message: "Something went wrong!" });
 });
 
 const PORT = env.APP_PORT;

@@ -1,6 +1,6 @@
 const success = (data, message = "Success") => {
   return {
-    status: "ok",
+    status: true,
     message,
     data,
   };
