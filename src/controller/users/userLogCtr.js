@@ -5,7 +5,7 @@ const errorResponse = require("../../common/error.js");
 const success = require("../../common/success.js");
 const { loginSchema } = require("../../validation/login.js");
 const loginModel = require("../../models/users/userLogModel");
-const { generateAccessToken } = require("../../utils/jwt");
+const { generateAccessToken } = require("../../lib/jwt");
 
 const login = async (req, res) => {
   // validate input

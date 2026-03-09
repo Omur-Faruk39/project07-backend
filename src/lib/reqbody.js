@@ -1,4 +1,4 @@
-const { deepTrim } = require("./trim");
+const { deepTrim } = require("../utils/trim.js");
 const sanitize = require("../utils/sanitize.js");
 
 const reqbody = (body, schema) => {

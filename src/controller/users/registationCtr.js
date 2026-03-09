@@ -9,10 +9,10 @@ const ErrorResponse = require("../../common/error.js");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
 const { otpSender } = require("../../lib/optSender.js");
-const { deepTrim } = require("../../lib/trim.js");
+const { deepTrim } = require("../../utils/trim.js");
 const reqbody = require("../../lib/reqbody.js");
 const { login } = require("../../models/users/userLogModel.js");
-const { generateAccessToken } = require("../../utils/jwt.js");
+const { generateAccessToken } = require("../../lib/jwt.js");
 
 const registationCtr = {};
 
