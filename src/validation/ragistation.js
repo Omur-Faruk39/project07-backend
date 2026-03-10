@@ -41,6 +41,8 @@ const userSchema = Joi.object({
   refer_code: Joi.string().alphanum().max(20).optional(),
   bio: Joi.string().max(500).optional(),
   banner: Joi.string().optional(),
+  dob: Joi.date().less("now").optional(),
+  gender: Joi.string().valid("Male", "Female", "Other").optional(),
 });
 
 const otpVerificationSchema = Joi.object({

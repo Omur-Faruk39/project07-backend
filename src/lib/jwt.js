@@ -3,7 +3,7 @@ const { JWT_SECRET } = require("../config/env.js");
 
 function generateAccessToken(user) {
   const payload = {
-    sub: user.phone,
+    phone: user.phone,
     username: user.username,
     role: user.role || "user",
   };

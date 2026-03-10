@@ -14,12 +14,16 @@ const register = async (data) => {
     bio = null,
     banner = null,
     fesid = null,
+    gender = null,
+    dob = null,
   } = data;
 
   try {
-    const [rows] = await db.query("SELECT * FROM user WHERE phone = ?", [
-      phone,
-    ]);
+    // Check if user exists by phone, email, or user_name
+    const [rows] = await db.query(
+      "SELECT * FROM user WHERE phone = ? OR email = ? OR user_name = ?",
+      [phone, email, user_name],
+    );
 
     const roleJson = JSON.stringify(role);
 
@@ -29,7 +33,7 @@ const register = async (data) => {
          SET email = ?, full_name = ?, uid = ?, game_id_name = ?, user_name = ?, 
              role = ?, pic = ?, refer = ?, bio = ?, banner = ?, fesid = ?, 
              played_match = 0, winned_match = 0, life_time_value = 0, isvarified = 0, 
-             monthly_value = 0, created_time = CURRENT_TIMESTAMP, updated_time = CURRENT_TIMESTAMP
+             monthly_value = 0, gender = ?, dob = ?, created_time = CURRENT_TIMESTAMP, updated_time = CURRENT_TIMESTAMP
          WHERE phone = ?`,
         [
           email,
@@ -43,6 +47,8 @@ const register = async (data) => {
           bio,
           banner,
           fesid,
+          gender,
+          dob,
           phone,
         ],
       );
@@ -50,8 +56,8 @@ const register = async (data) => {
     } else {
       const result = await db.query(
         `INSERT INTO user 
-         (email, full_name, uid, game_id_name, user_name, role, pic, phone, refer, bio, banner, fesid) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (email, full_name, uid, game_id_name, user_name, role, pic, phone, refer, bio, banner, fesid, gender, dob) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           email,
           full_name,
@@ -65,6 +71,8 @@ const register = async (data) => {
           bio,
           banner,
           fesid,
+          gender,
+          dob,
         ],
       );
       return { action: "inserted", result };
@@ -76,7 +84,7 @@ const register = async (data) => {
 };
 
 const registerPassword = async (data) => {
-  const { email = null, phone, fesid = null, password } = data;
+  const { email = null, phone, fesid = null, password, user_name } = data;
 
   try {
     const [rows] = await db.query(
@@ -87,15 +95,15 @@ const registerPassword = async (data) => {
     if (rows.length > 0) {
       const result = await db.query(
         `UPDATE password_user 
-         SET email = ?, password = ?, fesid = ?, updated_time = CURRENT_TIMESTAMP
+         SET email = ?, password = ?, fesid = ?, user_name = ?, updated_time = CURRENT_TIMESTAMP
          WHERE phone = ?`,
-        [email, password, fesid, phone],
+        [email, password, fesid, user_name, phone],
       );
       return { action: "updated", result };
     } else {
       const result = await db.query(
-        `INSERT INTO password_user (email, phone, fesid, password) VALUES (?, ?, ?, ?)`,
-        [email, phone, fesid, password],
+        `INSERT INTO password_user (email, phone, fesid, password, user_name) VALUES (?, ?, ?, ?, ?)`,
+        [email, phone, fesid, password, user_name],
       );
       return { action: "inserted", result };
     }
@@ -111,6 +119,8 @@ const userExists = async (data, key) => {
     data,
   );
   const user = rows[0];
+  // console.log("User existence check:", { key, data, user });
+  // console.log(user && user.isvarified > 0);
   return Boolean(user && user.isvarified > 0);
 };
 

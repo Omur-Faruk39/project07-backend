@@ -57,11 +57,11 @@ registationCtr.register = async (req, res) => {
       .status(400)
       .json(ErrorResponse("Email already exists", "Duplicate email"));
   }
-  if (await registrationModel.userExists(value.uid, "uid")) {
-    return res
-      .status(400)
-      .json(ErrorResponse("UID already taken", "Duplicate UID"));
-  }
+  // if (await registrationModel.userExists(value.uid, "uid")) {
+  //   return res
+  //     .status(400)
+  //     .json(ErrorResponse("UID already taken", "Duplicate UID"));
+  // }
   if (await registrationModel.userExists(value.user_name, "user_name")) {
     return res
       .status(400)
@@ -83,15 +83,20 @@ registationCtr.register = async (req, res) => {
       phone: value.phone,
       password: hash,
       email: value.email,
+      user_name: value.user_name,
       fesid,
     });
 
     const otp = Math.floor(100000 + Math.random() * 900000);
-    await registrationModel.saveOTP(value.phone, otp, req.ip);
-    await otpSender(
-      `880${value.phone}`,
-      `Your OTP for registration is: ${otp}`,
+    const saveOtpResult = await registrationModel.saveOTP(
+      value.phone,
+      otp,
+      req.ip,
     );
+    // await otpSender(
+    //   `880${value.phone}`,
+    //   `Your OTP for registration is: ${otp}`,
+    // );
     res
       .status(201)
       .json(
@@ -130,7 +135,7 @@ registationCtr.verifyOTP = async (req, res) => {
       const user = await login("", data.phone);
       const jwtToken = generateAccessToken({
         phone: user.phone,
-        username: user.username,
+        username: user.user_name,
         role: user.role,
       });
 
