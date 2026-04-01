@@ -17,11 +17,11 @@ const login = async (req, res) => {
   }
 
   // Normalize phone number
-  if (data.phone.startsWith("+880")) {
+  if (data.phone && data.phone.startsWith("+880")) {
     data.phone = data.phone.slice(4);
-  } else if (data.phone.startsWith("880")) {
+  } else if (data.phone && data.phone.startsWith("880")) {
     data.phone = data.phone.slice(3);
-  } else if (data.phone.startsWith("0")) {
+  } else if (data.phone && data.phone.startsWith("0")) {
     data.phone = data.phone.slice(1);
   }
 

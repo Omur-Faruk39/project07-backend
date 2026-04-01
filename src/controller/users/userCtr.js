@@ -5,7 +5,8 @@ const { getUserModel } = require("../../models/users/userModel.js");
 const getProfileCtr = async (req, res) => {
   //fetch user from database using req.user.sub (phone number)
   try {
-    const user = await getUserModel(req.user);
+    const data = await getUserModel(req.user);
+    const user = data[0];
     if (!user) {
       return res
         .status(404)
@@ -52,7 +53,6 @@ const getProfileCtr = async (req, res) => {
       ),
     );
   } catch (err) {
-    console.error("Error fetching user:", err);
     return res
       .status(500)
       .json(
