@@ -7,7 +7,7 @@ const varifyToken = require("../middleware/auth.js");
 //controllers
 const friendCtr = require("../controller/users/friendCtr.js");
 const { login } = require("../controller/users/userLogCtr.js");
-const { getProfileCtr } = require("../controller/users/userCtr.js");
+const userCtr = require("../controller/users/userCtr.js");
 const registrationCtr = require("../controller/users/registationCtr.js");
 
 // open routes
@@ -17,7 +17,8 @@ routes.post("/varify-otp", registrationCtr.verifyOTP);
 
 // protected routes
 protectedRoutes.use(varifyToken);
-protectedRoutes.get("/profile", getProfileCtr);
+protectedRoutes.get("/profile", userCtr.getProfileCtr);
+protectedRoutes.get("/user-profile", userCtr.getUserProfile);
 protectedRoutes.post("/send-friend-request", friendCtr.sendFriendRequest);
 
 routes.use(protectedRoutes);

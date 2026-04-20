@@ -4,8 +4,6 @@ const { getUserModel } = require("./userModel.js");
 const sendFriendRequest = async (data) => {
   const isUserExist = await getUserModel({ username: data.user_name_2 });
 
-  // console.log(isUserExist);
-
   if (!isUserExist[0]) {
     return false;
   } else if (data.user_name_2 === data.user_name_1) {
@@ -19,7 +17,6 @@ const sendFriendRequest = async (data) => {
     );
     return true;
   } catch (error) {
-    // console.error("Error sending friend request:", error);
     return false;
   }
 };

@@ -8,9 +8,11 @@ const sendFriendRequest = async (req, res) => {
 
   const isSuccess = await friendModel.sendFriendRequest(data);
 
-  // console.log(isSuccess);
-
   if (isSuccess) {
+    // add collumn for notification
+    //
+    //
+    //add notification
     return res.json({ success: true, message: "Friend request sent" });
   } else {
     return res
