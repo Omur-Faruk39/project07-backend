@@ -46,7 +46,7 @@ const login = async (req, res) => {
   // login successful, generate JWT token
   const jwtToken = generateAccessToken({
     phone: user.phone,
-    username: user.username,
+    username: user.user_name,
     role: user.role,
   });
 

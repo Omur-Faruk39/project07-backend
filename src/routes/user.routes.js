@@ -1,11 +1,14 @@
 const routes = require("express").Router();
 const protectedRoutes = require("express").Router();
 const success = require("../common/success.js");
-const registrationCtr = require("../controller/users/registationCtr.js");
 const registrationModel = require("../models/users/registationModel.js");
+const varifyToken = require("../middleware/auth.js");
+
+//controllers
+const friendCtr = require("../controller/users/friendCtr.js");
 const { login } = require("../controller/users/userLogCtr.js");
 const { getProfileCtr } = require("../controller/users/userCtr.js");
-const varifyToken = require("../middleware/auth.js");
+const registrationCtr = require("../controller/users/registationCtr.js");
 
 // open routes
 routes.post("/login", login);
@@ -15,8 +18,9 @@ routes.post("/varify-otp", registrationCtr.verifyOTP);
 // protected routes
 protectedRoutes.use(varifyToken);
 protectedRoutes.get("/profile", getProfileCtr);
-routes.use(protectedRoutes);
+protectedRoutes.post("/send-friend-request", friendCtr.sendFriendRequest);
 
+routes.use(protectedRoutes);
 // developer routes (excluded from auth)
 routes.post("/check-phone", async (req, res) => {
   const { phone } = req.body;
