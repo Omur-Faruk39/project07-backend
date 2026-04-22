@@ -62,6 +62,7 @@ const getProfileCtr = async (req, res) => {
   //   res.json({ success: true, user });
 };
 
+console.log("getProfileCtr called");
 const getUserProfile = async (req, res) => {
   const { phone, username } = req.query;
 
