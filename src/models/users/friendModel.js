@@ -21,6 +21,19 @@ const sendFriendRequest = async (data) => {
   }
 };
 
+const acceptFriendRequest = async (data) => {
+  try {
+    await db.query(
+      "UPDATE friend_request SET status = 'accepted' WHERE user_name_1 = ? AND user_name_2 = ?",
+      [data.user_name_1, data.user_name_2],
+    );
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 module.exports = {
   sendFriendRequest,
+  acceptFriendRequest,
 };

@@ -20,6 +20,7 @@ protectedRoutes.use(varifyToken);
 protectedRoutes.get("/profile", userCtr.getProfileCtr);
 protectedRoutes.get("/user-profile", userCtr.getUserProfile);
 protectedRoutes.post("/send-friend-request", friendCtr.sendFriendRequest);
+protectedRoutes.post("/accept-friend-request", friendCtr.acceptFriendRequest);
 
 routes.use(protectedRoutes);
 // developer routes (excluded from auth)
