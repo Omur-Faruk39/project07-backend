@@ -65,6 +65,8 @@ const getProfileCtr = async (req, res) => {
 const getUserProfile = async (req, res) => {
   const { phone, username } = req.query;
 
+  // console.log("hello")
+
   try {
     let data = {};
     if (phone) {
