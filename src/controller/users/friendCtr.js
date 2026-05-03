@@ -1,6 +1,7 @@
 const success = require("../../common/success.js");
 const Error = require("../../common/error.js");
 const friendModel = require("../../models/users/friendModel.js");
+const notification = require("../../lib/notification.js");
 
 const sendFriendRequest = async (req, res) => {
   const data = {
@@ -13,10 +14,22 @@ const sendFriendRequest = async (req, res) => {
 
     if (isSuccess) {
       // add collumn for notification
+      // console.log("add notification");
+      notification.addNotification({
+        userName: data.user_name_1, // or req.user.username
+        type: "friend",
+        title: "send you a friend request",
+        userName2: data.user_name_2, // or req.body.userName
+      });
       //
       //
       //add notification
+
       return res.json({ success: true, message: "Friend request sent" });
+    } else {
+      res
+        .status(400)
+        .json(Error("request body invalid", "Failed to send friend request"));
     }
   } catch (error) {
     return res.status(500).json(Error(error, "Failed to send friend request"));

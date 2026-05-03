@@ -22,6 +22,8 @@ protectedRoutes.get("/user-profile", userCtr.getUserProfile);
 protectedRoutes.post("/send-friend-request", friendCtr.sendFriendRequest);
 protectedRoutes.post("/accept-friend-request", friendCtr.acceptFriendRequest);
 
+protectedRoutes.get("/notifications", () => {});
+
 routes.use(protectedRoutes);
 // developer routes (excluded from auth)
 routes.post("/check-phone", async (req, res) => {
