@@ -11,7 +11,7 @@ const validationAddNotification = Joi.object({
       then: Joi.required(),
       otherwise: Joi.forbidden(),
     }),
-  data: Joi.string(), // Conditional validation for data
+  data: Joi.string(),
 });
 
 module.exports = {

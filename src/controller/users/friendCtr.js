@@ -14,15 +14,15 @@ const sendFriendRequest = async (req, res) => {
 
     if (isSuccess) {
       // add collumn for notification
-      // console.log("add notification");
       notification.addNotification({
-        userName: data.user_name_1, // or req.user.username
+        userName: data.user_name_1,
         type: "friend",
         title: "send you a friend request",
-        userName2: data.user_name_2, // or req.body.userName
+        userName2: data.user_name_2,
       });
       //
-      //
+      //web socket notification
+
       //add notification
 
       return res.json({ success: true, message: "Friend request sent" });
