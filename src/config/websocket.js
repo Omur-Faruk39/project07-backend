@@ -12,7 +12,6 @@ const onlineUsers = new Map();
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // user sends username after connect
   socket.on("register", (username) => {
     onlineUsers.set(username, socket.id);
   });
