@@ -23,7 +23,6 @@ function sanitizeInput(data) {
 
     return sanitizedObj;
   }
-  //for string inputs, we will sanitize and check for suspicious JS patterns
 
   if (typeof data === "string") {
     const clean = sanitizeHtml(data, {
