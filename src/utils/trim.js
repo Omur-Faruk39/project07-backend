@@ -19,7 +19,6 @@ const deepTrim = (data) => {
     return trimmedObject;
   }
 
-  // number, boolean, null, undefined
   return data;
 };
 
