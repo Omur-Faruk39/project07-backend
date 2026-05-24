@@ -14,7 +14,6 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(helmet());
 app.use(limiter);
-// app.use(xss());
 
 app.use("/api/user", usersRouter);
 
