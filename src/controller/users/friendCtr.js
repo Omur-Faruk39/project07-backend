@@ -3,6 +3,9 @@ const Error = require("../../common/error.js");
 const friendModel = require("../../models/users/friendModel.js");
 const notification = require("../../lib/notification.js");
 
+// Add this line at the top (for socket)
+const { getUserSocket } = require("../../config/websocket.js"); // ← Only new line
+
 const sendFriendRequest = async (req, res) => {
   const data = {
     user_name_1: req.user.username,
@@ -20,6 +23,19 @@ const sendFriendRequest = async (req, res) => {
         title: "send you a friend request",
         userName2: data.user_name_2,
       });
+
+      // ================== WebSocket Notification ==================
+      const targetSocket = getUserSocket(data.user_name_2);
+      if (targetSocket) {
+        targetSocket.emit("notification", {
+          type: "friend_request",
+          from: data.user_name_1,
+          title: `${data.user_name_1} sent you a friend request`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      // ===========================================================
+
       //
       //web socket notification
 
@@ -46,6 +62,21 @@ const acceptFriendRequest = async (req, res) => {
     const isSuccess = await friendModel.acceptFriendRequest(data);
 
     if (isSuccess) {
+      // ================== WebSocket Notification ==================
+      const targetSocket = getUserSocket(data.user_name_2);
+      if (targetSocket) {
+        targetSocket.emit("notification", {
+          type: "friend_request_accepted",
+          from: data.user_name_1,
+          title: `${data.user_name_1} accepted your friend request`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      // ===========================================================
+
+      // web socket notification
+
+      // add collumn for notification
       return res.json(success(null, "Friend request accepted"));
     }
   } catch (error) {

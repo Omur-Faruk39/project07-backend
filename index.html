@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f4f4f4;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      input,
+      button {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .hidden {
+        display: none;
+      }
+      #notifications {
+        margin-top: 20px;
+        border-top: 2px solid #ddd;
+        padding-top: 15px;
+      }
+      .notif {
+        background: #e3f2fd;
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 6px;
+        border-left: 5px solid #2196f3;
+      }
+      .status {
+        color: green;
+        font-weight: bold;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Login Section -->
+      <div id="loginSection">
+        <h2>Login</h2>
+        <input type="text" id="loginInput" placeholder="Phone or Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <button onclick="login()">Login</button>
+        <p id="loginStatus"></p>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="dashboard" class="hidden">
+        <h2>Welcome, <span id="username"></span></h2>
+        <button onclick="logout()">Logout</button>
+
+        <div id="notifications">
+          <h3>Notifications</h3>
+          <div id="notifList"></div>
+        </div>
+
+        <!-- Test Friend Request -->
+        <h3>Test Friend Request</h3>
+        <input type="text" id="targetUser" placeholder="Target Username" />
+        <button onclick="sendTestFriendRequest()">Send Friend Request</button>
+      </div>
+    </div>
+
+    <!-- Socket.io CDN -->
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
+    <script>
+      // ================== CONFIG ==================
+      const API_BASE = "http://localhost:3522/api/user";
+      let token = null;
+      let socket = null;
+      let currentUsername = null;
+
+      // ================== LOGIN ==================
+      async function login() {
+        const input = document.getElementById("loginInput").value.trim();
+        const password = document.getElementById("password").value;
+
+        if (!input || !password) {
+          alert("Please fill all fields");
+          return;
+        }
+
+        const payload = {};
+        if (input.includes("@")) {
+          payload.email = input;
+        } else {
+          payload.phone = input;
+        }
+        payload.password = password;
+
+        try {
+          console.log("🔑 Login payload:", payload);
+
+          const res = await fetch(`${API_BASE}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+          console.log("Login Response:", data);
+
+          if (data.status === true && data.data?.token) {
+            token = data.data.token;
+            currentUsername = data.data.user?.username || "User";
+
+            // Save token in cookie
+            document.cookie = `token=${token}; path=/; max-age=86400`;
+
+            document.getElementById("loginStatus").innerHTML =
+              `<span class="status">Login Successful!</span>`;
+
+            showDashboard();
+            initSocket();
+          } else {
+            document.getElementById("loginStatus").innerHTML =
+              `<span class="error">${data.message || "Login failed"}</span>`;
+          }
+        } catch (err) {
+          console.error(err);
+          document.getElementById("loginStatus").innerHTML =
+            `<span class="error">Server connection error</span>`;
+        }
+      }
+
+      // ================== SHOW DASHBOARD ==================
+      function showDashboard() {
+        document.getElementById("loginSection").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+        document.getElementById("username").textContent = currentUsername;
+      }
+
+      // ================== SOCKET.IO ==================
+      function initSocket() {
+        console.log("🔌 Connecting to Socket.io on port 3522...");
+
+        socket = io("http://localhost:3522", {
+          transports: ["websocket", "polling"],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          timeout: 10000,
+        });
+
+        socket.on("connect", () => {
+          console.log("✅ Socket connected successfully!");
+          socket.emit("authenticate", currentUsername);
+        });
+
+        socket.on("notification", (data) => {
+          console.log("🔔 New Notification Received:", data);
+          addNotification(data);
+        });
+
+        socket.on("connect_error", (err) => {
+          console.error("❌ Socket connection error:", err.message);
+        });
+      }
+
+      // Add notification to UI
+      function addNotification(notif) {
+        const list = document.getElementById("notifList");
+        const div = document.createElement("div");
+        div.className = "notif";
+        div.innerHTML = `
+    <strong>${notif.title || "New Notification"}</strong><br>
+    <small>From: ${notif.from} | ${new Date(notif.timestamp).toLocaleTimeString()}</small>
+  `;
+        list.prepend(div);
+      }
+
+      // ================== TEST SEND FRIEND REQUEST ==================
+      async function sendTestFriendRequest() {
+        const target = document.getElementById("targetUser").value.trim();
+        if (!target) return alert("Enter target username");
+
+        try {
+          const res = await fetch(
+            "http://localhost:3522/api/user/send-friend-request",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ userName: target }),
+            },
+          );
+
+          const result = await res.json();
+          console.log("Friend Request Response:", result);
+          alert("Friend request sent successfully!");
+        } catch (err) {
+          console.error(err);
+          alert("Failed to send friend request");
+        }
+      }
+
+      // ================== LOGOUT ==================
+      function logout() {
+        document.cookie =
+          "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        location.reload();
+      }
+
+      // Auto login check
+      window.onload = () => {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+          if (cookie.trim().startsWith("token=")) {
+            token = cookie.split("=")[1];
+            currentUsername =
+              prompt("Enter your username for testing:") || "testuser";
+            showDashboard();
+            initSocket();
+            break;
+          }
+        }
+      };
+    </script>
+  </body>
+</html>

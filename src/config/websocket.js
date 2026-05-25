@@ -1,28 +1,38 @@
 const { Server } = require("socket.io");
 
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
-});
+let io;
+const userSocketMap = new Map(); // username -> socket
 
-// store online users
-const onlineUsers = new Map();
-
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  socket.on("register", (username) => {
-    onlineUsers.set(username, socket.id);
+const initSocket = (server) => {
+  io = new Server(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
   });
 
-  socket.on("disconnect", () => {
-    for (let [key, value] of onlineUsers.entries()) {
-      if (value === socket.id) {
-        onlineUsers.delete(key);
+  io.on("connection", (socket) => {
+    socket.on("authenticate", (username) => {
+      if (username) {
+        userSocketMap.set(username, socket);
       }
-    }
-  });
-});
+    });
 
-module.exports = { io, onlineUsers };
+    socket.on("disconnect", () => {
+      for (const [user, sock] of userSocketMap.entries()) {
+        if (sock.id === socket.id) {
+          userSocketMap.delete(user);
+          break;
+        }
+      }
+    });
+  });
+
+  return io;
+};
+
+const getUserSocket = (username) => {
+  return userSocketMap.get(username);
+};
+
+module.exports = { initSocket, getUserSocket, io };
