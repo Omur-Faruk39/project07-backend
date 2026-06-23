@@ -3,8 +3,7 @@ const Error = require("../../common/error.js");
 const friendModel = require("../../models/users/friendModel.js");
 const notification = require("../../lib/notification.js");
 
-// Add this line at the top (for socket)
-const { getUserSocket } = require("../../config/websocket.js"); // ← Only new line
+const { getUserSocket } = require("../../config/websocket.js");
 
 const sendFriendRequest = async (req, res) => {
   const data = {
@@ -16,7 +15,6 @@ const sendFriendRequest = async (req, res) => {
     const isSuccess = await friendModel.sendFriendRequest(data);
 
     if (isSuccess) {
-      // add collumn for notification
       notification.addNotification({
         userName: data.user_name_1,
         type: "friend",
@@ -24,7 +22,6 @@ const sendFriendRequest = async (req, res) => {
         userName2: data.user_name_2,
       });
 
-      // ================== WebSocket Notification ==================
       const targetSocket = getUserSocket(data.user_name_2);
       if (targetSocket) {
         targetSocket.emit("notification", {
@@ -34,12 +31,6 @@ const sendFriendRequest = async (req, res) => {
           timestamp: new Date().toISOString(),
         });
       }
-      // ===========================================================
-
-      //
-      //web socket notification
-
-      //add notification
 
       return res.json({ success: true, message: "Friend request sent" });
     } else {
@@ -74,9 +65,13 @@ const acceptFriendRequest = async (req, res) => {
       }
       // ===========================================================
 
-      // web socket notification
+      notification.addNotification({
+        userName: data.user_name_1,
+        type: "friend",
+        title: "accepted your friend request",
+        userName2: data.user_name_2,
+      });
 
-      // add collumn for notification
       return res.json(success(null, "Friend request accepted"));
     }
   } catch (error) {
@@ -86,7 +81,43 @@ const acceptFriendRequest = async (req, res) => {
   }
 };
 
+const deleteFriend = async (req, res) => {
+  const data = {
+    user_name_1: req.user.username,
+    user_name_2: req.body.userName,
+  };
+
+  try {
+    const isSuccess = await friendModel.deleteFriend(data);
+
+    if (isSuccess) {
+      return res.json(success(null, "Friend deleted successfully"));
+    } else {
+      res
+        .status(400)
+        .json(Error("Friend not found or not accepted", "Failed to delete friend"));
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json(Error(error, "Failed to delete friend"));
+  }
+};
+
+const getFriends = async (req, res) => {
+  try {
+    const friends = await friendModel.getFriends(req.user.username);
+    return res.json(success(friends, "Friends retrieved successfully"));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(Error(error, "Failed to get friends"));
+  }
+};
+
 module.exports = {
   sendFriendRequest,
   acceptFriendRequest,
+  deleteFriend,
+  getFriends,
 };

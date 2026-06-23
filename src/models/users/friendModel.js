@@ -33,7 +33,33 @@ const acceptFriendRequest = async (data) => {
   }
 };
 
+const deleteFriend = async (data) => {
+  try {
+    const result = await db.query(
+      "DELETE FROM friend_request WHERE ((user_name_1 = ? AND user_name_2 = ?) OR (user_name_1 = ? AND user_name_2 = ?)) AND status = 'accepted'",
+      [data.user_name_1, data.user_name_2, data.user_name_2, data.user_name_1],
+    );
+    return result.affectedRows > 0;
+  } catch (error) {
+    return false;
+  }
+};
+
+const getFriends = async (username) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT user_name_2 AS friend FROM friend_request WHERE user_name_1 = ? AND status = 'accepted' UNION SELECT user_name_1 AS friend FROM friend_request WHERE user_name_2 = ? AND status = 'accepted' LIMIT 30",
+      [username, username],
+    );
+    return rows;
+  } catch (error) {
+    return [];
+  }
+};
+
 module.exports = {
   sendFriendRequest,
   acceptFriendRequest,
+  deleteFriend,
+  getFriends,
 };

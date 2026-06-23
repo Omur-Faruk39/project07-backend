@@ -21,6 +21,8 @@ protectedRoutes.get("/profile", userCtr.getProfileCtr);
 protectedRoutes.get("/user-profile", userCtr.getUserProfile);
 protectedRoutes.post("/send-friend-request", friendCtr.sendFriendRequest);
 protectedRoutes.post("/accept-friend-request", friendCtr.acceptFriendRequest);
+protectedRoutes.post("/delete-friend", friendCtr.deleteFriend);
+protectedRoutes.get("/friends", friendCtr.getFriends);
 
 protectedRoutes.get("/notifications", () => {});
 
