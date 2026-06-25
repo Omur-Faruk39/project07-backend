@@ -2,13 +2,21 @@ const success = require("../../common/success.js");
 const Error = require("../../common/error.js");
 const friendModel = require("../../models/users/friendModel.js");
 const notification = require("../../lib/notification.js");
-
 const { getUserSocket } = require("../../config/websocket.js");
+const reqbody = require("../../lib/reqbody.js");
+const { friendRequestSchema } = require("../../validation/friend.js");
 
 const sendFriendRequest = async (req, res) => {
+  const body = reqbody(req.body, friendRequestSchema);
+  if (body instanceof Error) {
+    return res
+      .status(400)
+      .json(Error(body.message, "Validation failed"));
+  }
+
   const data = {
     user_name_1: req.user.username,
-    user_name_2: req.body.userName,
+    user_name_2: body.userName,
   };
 
   try {
@@ -44,16 +52,22 @@ const sendFriendRequest = async (req, res) => {
 };
 
 const acceptFriendRequest = async (req, res) => {
+  const body = reqbody(req.body, friendRequestSchema);
+  if (body instanceof Error) {
+    return res
+      .status(400)
+      .json(Error(body.message, "Validation failed"));
+  }
+
   const data = {
     user_name_1: req.user.username,
-    user_name_2: req.body.userName,
+    user_name_2: body.userName,
   };
 
   try {
     const isSuccess = await friendModel.acceptFriendRequest(data);
 
     if (isSuccess) {
-      // ================== WebSocket Notification ==================
       const targetSocket = getUserSocket(data.user_name_2);
       if (targetSocket) {
         targetSocket.emit("notification", {
@@ -63,7 +77,6 @@ const acceptFriendRequest = async (req, res) => {
           timestamp: new Date().toISOString(),
         });
       }
-      // ===========================================================
 
       notification.addNotification({
         userName: data.user_name_1,
@@ -82,9 +95,16 @@ const acceptFriendRequest = async (req, res) => {
 };
 
 const deleteFriend = async (req, res) => {
+  const body = reqbody(req.body, friendRequestSchema);
+  if (body instanceof Error) {
+    return res
+      .status(400)
+      .json(Error(body.message, "Validation failed"));
+  }
+
   const data = {
     user_name_1: req.user.username,
-    user_name_2: req.body.userName,
+    user_name_2: body.userName,
   };
 
   try {
@@ -106,7 +126,8 @@ const deleteFriend = async (req, res) => {
 
 const getFriends = async (req, res) => {
   try {
-    const friends = await friendModel.getFriends(req.user.username);
+    const offset = parseInt(req.query.offset) || 0;
+    const friends = await friendModel.getFriends(req.user.username, offset);
     return res.json(success(friends, "Friends retrieved successfully"));
   } catch (error) {
     return res

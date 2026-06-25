@@ -45,11 +45,11 @@ const deleteFriend = async (data) => {
   }
 };
 
-const getFriends = async (username) => {
+const getFriends = async (username, offset = 0) => {
   try {
     const [rows] = await db.query(
-      "SELECT user_name_2 AS friend FROM friend_request WHERE user_name_1 = ? AND status = 'accepted' UNION SELECT user_name_1 AS friend FROM friend_request WHERE user_name_2 = ? AND status = 'accepted' LIMIT 30",
-      [username, username],
+      "SELECT user_name_2 AS friend FROM friend_request WHERE user_name_1 = ? AND status = 'accepted' UNION SELECT user_name_1 AS friend FROM friend_request WHERE user_name_2 = ? AND status = 'accepted' ORDER BY friend LIMIT 30 OFFSET ?",
+      [username, username, offset],
     );
     return rows;
   } catch (error) {
