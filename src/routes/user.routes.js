@@ -9,6 +9,7 @@ const friendCtr = require("../controller/users/friendCtr.js");
 const { login } = require("../controller/users/userLogCtr.js");
 const userCtr = require("../controller/users/userCtr.js");
 const registrationCtr = require("../controller/users/registationCtr.js");
+const notificationsCtr = require("../controller/users/notificationsCtr.js");
 
 // open routes
 routes.post("/login", login);
@@ -24,7 +25,7 @@ protectedRoutes.post("/accept-friend-request", friendCtr.acceptFriendRequest);
 protectedRoutes.post("/delete-friend", friendCtr.deleteFriend);
 protectedRoutes.get("/friends", friendCtr.getFriends);
 
-protectedRoutes.get("/notifications", () => {});
+protectedRoutes.get("/notifications", notificationsCtr.getNotifications);
 
 routes.use(protectedRoutes);
 // developer routes (excluded from auth)

@@ -16,6 +16,15 @@ const addNotification = async (req) => {
   );
 };
 
+const getNotifications = async (username) => {
+  const [rows] = await db.query(
+    "SELECT * FROM notifications WHERE user_name = ? ORDER BY nanoid DESC LIMIT 50",
+    [username],
+  );
+  return rows;
+};
+
 module.exports = {
   addNotification,
+  getNotifications,
 };

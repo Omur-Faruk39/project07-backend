@@ -1,5 +1,5 @@
 const success = require("../../common/success.js");
-const Error = require("../../common/error.js");
+const errorResponse = require("../../common/error.js");
 const friendModel = require("../../models/users/friendModel.js");
 const notification = require("../../lib/notification.js");
 const { getUserSocket } = require("../../config/websocket.js");
@@ -11,7 +11,7 @@ const sendFriendRequest = async (req, res) => {
   if (body instanceof Error) {
     return res
       .status(400)
-      .json(Error(body.message, "Validation failed"));
+      .json(errorResponse(body.message, "Validation failed"));
   }
 
   const data = {
@@ -44,10 +44,10 @@ const sendFriendRequest = async (req, res) => {
     } else {
       res
         .status(400)
-        .json(Error("request body invalid", "Failed to send friend request"));
+        .json(errorResponse("request body invalid", "Failed to send friend request"));
     }
   } catch (error) {
-    return res.status(500).json(Error(error, "Failed to send friend request"));
+    return res.status(500).json(errorResponse(error, "Failed to send friend request"));
   }
 };
 
@@ -56,7 +56,7 @@ const acceptFriendRequest = async (req, res) => {
   if (body instanceof Error) {
     return res
       .status(400)
-      .json(Error(body.message, "Validation failed"));
+      .json(errorResponse(body.message, "Validation failed"));
   }
 
   const data = {
@@ -90,7 +90,7 @@ const acceptFriendRequest = async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .json(Error(error, "Failed to accept friend request"));
+      .json(errorResponse(error, "Failed to accept friend request"));
   }
 };
 
@@ -99,7 +99,7 @@ const deleteFriend = async (req, res) => {
   if (body instanceof Error) {
     return res
       .status(400)
-      .json(Error(body.message, "Validation failed"));
+      .json(errorResponse(body.message, "Validation failed"));
   }
 
   const data = {
@@ -115,12 +115,12 @@ const deleteFriend = async (req, res) => {
     } else {
       res
         .status(400)
-        .json(Error("Friend not found or not accepted", "Failed to delete friend"));
+        .json(errorResponse("Friend not found or not accepted", "Failed to delete friend"));
     }
   } catch (error) {
     return res
       .status(500)
-      .json(Error(error, "Failed to delete friend"));
+      .json(errorResponse(error, "Failed to delete friend"));
   }
 };
 
@@ -132,7 +132,7 @@ const getFriends = async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .json(Error(error, "Failed to get friends"));
+      .json(errorResponse(error, "Failed to get friends"));
   }
 };
 

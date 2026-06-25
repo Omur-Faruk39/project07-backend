@@ -19,6 +19,11 @@ const addNotification = async (data) => {
   });
 };
 
+const getNotifications = async (username) => {
+  return await notificationModel.getNotifications(username);
+};
+
 module.exports = {
   addNotification,
+  getNotifications,
 };
