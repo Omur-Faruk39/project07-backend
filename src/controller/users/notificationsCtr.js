@@ -4,10 +4,21 @@ const notification = require("../../lib/notification.js");
 
 const getNotifications = async (req, res) => {
   try {
-    const notifications = await notification.getNotifications(req.user.username);
-    return res.json(success(notifications, "Notifications retrieved"));
+    const notifications = await notification.getNotifications(
+      req.user.username,
+    );
+
+    // if (!notifications || notifications.length === 0) {
+    //   return res.json(success([], "No notifications found"));
+    // }
+
+    return res.json(
+      success({ id: notifications.nanoid }, "Notifications retrieved"),
+    );
   } catch (error) {
-    return res.status(500).json(errorResponse(error, "Failed to get notifications"));
+    return res
+      .status(500)
+      .json(errorResponse(error, "Failed to get notifications"));
   }
 };
 

@@ -13,6 +13,7 @@ const { deepTrim } = require("../../utils/trim.js");
 const reqbody = require("../../lib/reqbody.js");
 const { login } = require("../../models/users/userLogModel.js");
 const { generateAccessToken } = require("../../lib/jwt.js");
+const { uploadImage } = require("../../lib/supabaseStorage.js");
 
 const registationCtr = {};
 

@@ -10,4 +10,8 @@ module.exports = {
   OTP_SECRET_KEY: process.env.OTP_SECRET_KEY,
   OTP_URL_ENDPOINT: process.env.OTP_URL_ENDPOINT,
   JWT_SECRET: process.env.JWT_SECRET,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
+  SUPABASE_BUCKET: process.env.SUPABASE_BUCKET || "profiles",
 };

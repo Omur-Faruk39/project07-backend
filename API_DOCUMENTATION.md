@@ -76,8 +76,8 @@ Creates a new user account and sends an OTP to the phone number.
   "dob": "2000-01-15",
   "refer": "REFCODE123",
   "bio": "Pro gamer",
-  "pic": "https://example.com/pic.jpg",
-  "banner": "https://example.com/banner.jpg"
+  "pic": "https://doejzoaqgdaefdfvypas.supabase.co/storage/v1/object/public/profiles/pics/xxx.jpg",
+  "banner": "https://doejzoaqgdaefdfvypas.supabase.co/storage/v1/object/public/profiles/banners/yyy.jpg"
 }
 ```
 
@@ -95,8 +95,8 @@ Creates a new user account and sends an OTP to the phone number.
 | `dob` | string (date) | No | ISO date format, must be in the past |
 | `refer` | string | No | Alphanumeric referral code, max 20 chars |
 | `bio` | string | No | Max 500 chars |
-| `pic` | string | No | Profile picture URL |
-| `banner` | string | No | Banner image URL |
+| `pic` | string | No | Supabase public URL (from `/upload-url` endpoint) |
+| `banner` | string | No | Supabase public URL (from `/upload-url` endpoint) |
 
 ### Response `201 Created`
 ```json
@@ -442,10 +442,80 @@ GET /friends?offset=60 → friends 61-90
 
 ## 11. Get Notifications
 
-⚠️ **Not yet implemented** — currently returns empty.
+Returns the last 50 notifications for the authenticated user.
 
 - **URL**: `GET /notifications`
 - **Auth**: JWT Bearer token
+
+### Response `200 OK`
+```json
+{
+  "status": true,
+  "message": "Notifications retrieved",
+  "data": [
+    {
+      "id": 1,
+      "user_name": "johndoe",
+      "type": "friend",
+      "title": "send you a friend request",
+      "user_name_2": "janedoe",
+      "data": null
+    }
+  ]
+}
+```
+
+---
+
+## 12. Get Upload URL
+
+Generates a short-lived signed URL for the frontend to upload an image directly to Supabase.
+
+- **URL**: `POST /upload-url`
+- **Auth**: JWT Bearer token
+
+### Request Body
+```json
+{ "folder": "pics", "ext": "jpg" }
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `folder` | string | Yes | `"pics"` or `"banners"` |
+| `ext` | string | Yes | `jpg`, `jpeg`, `png`, `webp`, or `gif` |
+
+### Response `200 OK`
+```json
+{
+  "status": true,
+  "message": "Upload URL generated",
+  "data": {
+    "signedUrl": "https://doejzoaqgdaefdfvypas.supabase.co/storage/v1/object/upload/...",
+    "publicUrl": "https://doejzoaqgdaefdfvypas.supabase.co/storage/v1/object/public/profiles/pics/xxx.jpg"
+  }
+}
+```
+
+### Frontend Upload Flow
+```js
+// 1. Get signed URL
+const res = await fetch("/api/user/upload-url", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+  body: JSON.stringify({ folder: "pics", ext: "jpg" }),
+});
+const { signedUrl, publicUrl } = (await res.json()).data;
+
+// 2. Upload file directly to Supabase via signed URL
+await fetch(signedUrl, {
+  method: "PUT",
+  headers: { "Content-Type": "image/jpeg" },
+  body: file,
+});
+
+// 3. Use the publicUrl in registration or profile update
+console.log(publicUrl);
+```
 
 ---
 
