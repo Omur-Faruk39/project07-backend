@@ -162,5 +162,5 @@ registationCtr.verifyOTP = async (req, res) => {
     res.status(500).json(ErrorResponse("Server error", err.message));
   }
 };
-
+//
 module.exports = registationCtr;
